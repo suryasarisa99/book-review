@@ -1,43 +1,93 @@
-const express = require('express');
+const express = require("express");
 let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+public_users.post("/register", (req, res) => {
+  let { username, password } = req.body;
+  if (username && password) {
+    let prvUser = users.some((user) => user.username == username);
+    if (prvUser) return res.send("Already User With that Username Exists");
 
-public_users.post("/register", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    users.push({ username, password });
+    res.send({
+      message: "Customer successfully registered. Now you can login",
+    });
+  } else {
+    res.status(400).send({ message: "username and password must be provided" });
+  }
 });
 
-// Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get("/", async function (req, res) {
+  try {
+    await new Promise((resolve, reject) => {
+      resolve(res.send(books));
+    });
+  } catch (err) {
+    res.status(500).send("Internal Server Error");
+  }
 });
 
-// Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
- });
-  
-// Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get("/isbn/:isbn", async function (req, res) {
+  try {
+    await new Promise((resolve, reject) => {
+      resolve(res.send(books[req.params.isbn]));
+    });
+  } catch (err) {
+    res.status(500).send("Internal Server Error");
+  }
 });
 
-// Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get("/author/:author", async function (req, res) {
+  let author = req.params.author.toLowerCase();
+  try {
+    await new Promise((resolve, reject) => {
+      let booksByAuthor = Object.entries(books)
+        .filter((book) => book[1].author?.toLowerCase() === author)
+        .map((book) => {
+          delete book[1].author;
+          book[1].isbn = book[0];
+          return book[1];
+        });
+      resolve(
+        res.send({
+          booksbyauthor: booksByAuthor,
+        })
+      );
+      resolve(res.send(books[req.params.isbn]));
+    });
+  } catch (err) {
+    res.status(500).send("Internal Server Error");
+  }
 });
 
-//  Get book review
-public_users.get('/review/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get("/title/:title", async function (req, res) {
+  let title = req.params.title.toLowerCase();
+  try {
+    await new Promise((resolve, reject) => {
+      let booksByTitle = Object.entries(books)
+        .filter((book) => book[1].title.toLowerCase() == title)
+        .map((book) => {
+          delete book[1].title;
+          book[1].isbn = book[0];
+          return book[1];
+        });
+
+      resolve(
+        res.send({
+          booksbytitle: booksByTitle,
+        })
+      );
+    });
+  } catch (err) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+public_users.get("/review/:isbn", function (req, res) {
+  let index = req.params.isbn;
+  res.send(books[index].reviews);
 });
 
 module.exports.general = public_users;
