@@ -8,7 +8,8 @@ public_users.post("/register", (req, res) => {
   let { username, password } = req.body;
   if (username && password) {
     let prvUser = users.some((user) => user.username == username);
-    if (prvUser) return res.send("Already User With that Username Exists");
+    if (prvUser)
+      return res.send({ message: "Already User With that Username Exists" });
 
     users.push({ username, password });
     res.send({
@@ -55,7 +56,6 @@ public_users.get("/author/:author", async function (req, res) {
           booksbyauthor: booksByAuthor,
         })
       );
-      resolve(res.send(books[req.params.isbn]));
     });
   } catch (err) {
     res.status(500).send("Internal Server Error");

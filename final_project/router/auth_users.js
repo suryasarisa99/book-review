@@ -23,13 +23,13 @@ regd_users.post("/login", (req, res) => {
     return res.status(400).json({ message: "Invalid username" });
   }
   if (authenticatedUser(username, password)) {
-    const token = jwt.sign({ data: username }, "secretkey", {
+    const token = jwt.sign({ data: username }, "fingerprint_customer", {
       expiresIn: "1h",
     });
     req.session.authorization = {
       token,
     };
-    return res.status(200).send("User successfully logged in");
+    return res.status(200).send({ message: "User successfully logged in" });
   } else {
     return res.status(401).json({ message: "Invalid username or password" });
   }
@@ -43,18 +43,18 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
   const book = books[isbn];
   if (!book) {
-    return res.status(404).send("Book not found");
+    return res.status(404).send({ messsage: "Book not found" });
   }
   if (!review) {
-    return res.status(400).send("Review is required");
+    return res.status(400).send({ messsage: "Review is required" });
   }
   if (!username) {
-    return res.status(400).send("Username is required");
+    return res.status(400).send({ messsage: "Username is required" });
   }
   book.reviews[username] = review;
-  res
-    .status(200)
-    .send(`The review for the book with ISBN ${isbn} has been added/updaated.`);
+  res.status(200).send({
+    message: `The review for the book with ISBN ${isbn} has been added/updated.`,
+  });
 });
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {
@@ -68,9 +68,9 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
     return res.status(400).send("Username is required");
   }
   delete book.reviews[username];
-  res
-    .status(200)
-    .send(`The review for the book with ISBN ${isbn} has been deleted.`);
+  res.status(200).send({
+    message: `The review for the book with ISBN ${isbn} has been deleted.`,
+  });
 });
 
 module.exports.authenticated = regd_users;

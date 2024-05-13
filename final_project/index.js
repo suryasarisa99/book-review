@@ -24,11 +24,11 @@ app.use("/customer/auth/*", function auth(req, res, next) {
 
   const token = req.session.authorization?.token;
   if (!token) {
-    return res.status(401).send("Unauthorized access");
+    return res.status(401).send({ message: "Unauthorized access" });
   }
-  jwt.verify(token, "secretkey", (err, user) => {
+  jwt.verify(token, "fingerprint_customer", (err, user) => {
     if (err) {
-      return res.status(401).send("Unauthorized access");
+      return res.status(401).send({ message: "Unauthorized access" });
     }
     console.log(`decoded user: ${JSON.stringify(user)}`);
     req.username = user.data;
